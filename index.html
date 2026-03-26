@@ -328,19 +328,13 @@
       color: currentColor
     });
 
-    const sent = navigator.sendBeacon(
-      APPS_SCRIPT_URL,
-      new Blob([payload], { type: "application/json" })
-    );
-
-    if (!sent) {
-      fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: payload
-      }).catch(console.error);
-    }
+    fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: payload
+    }).catch(err => console.error("저장 실패:", err));
 
     // 즉시 완료 화면
     render("done", { movie: selectedMovie, seat, color: currentColor });
