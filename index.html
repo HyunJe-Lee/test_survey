@@ -107,7 +107,7 @@
     }
 
     /* Movie options */
-    .movie-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .movie-options { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .movie-btn {
       padding: 14px 10px;
       border-radius: 14px; border: 2px solid #eee;
@@ -180,7 +180,13 @@
 
 <script>
   const QUICK_COLORS = ["#FF6B6B","#FF9F43","#FFEAA7","#55EFC4","#74B9FF","#A29BFE","#FD79A8","#2D3436"];
-  const MOVIES = ["A영화", "B영화", "C영화", "D영화"];
+  const MOVIES = [
+    "Interstellar",
+    "The Matrix 1",
+    "Inception",
+    "The Lord of the Rings: The Fellowship of the Ring",
+    "Harry Potter and the Philosopher's Stone"
+  ];
   let currentColor = "#FF6B6B";
   let selectedMovie = "";
 
@@ -193,7 +199,7 @@
           <div class="header">
             <div class="dot"></div>
             <h1>설문조사</h1>
-            <p class="subtitle">잠깐, 네 가지만 알려주세요!</p>
+            <p class="subtitle">잠깐! 세 가지만 알려주세요!</p>
           </div>
 
           <div class="section">
@@ -259,6 +265,14 @@
       // Text input → enable button
       document.getElementById("seatInput").addEventListener("input", checkCanSubmit);
 
+      document.getElementById("seatInput").addEventListener("blur", e => {
+        // 포커스 잃을 때 자동 정리
+        if (e.target.value.trim()) {
+          e.target.value = normalizeSeat(e.target.value);
+        }
+        checkCanSubmit();
+      });
+
       function checkCanSubmit() {
         const seat = document.getElementById("seatInput").value.trim();
         const btn = document.getElementById("submitBtn");
@@ -318,14 +332,22 @@
     });
   }
 
+  function normalizeSeat(raw) {
+    const cleaned = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const letters = cleaned.match(/[A-Z]+/g)?.join("") || "";
+    const numbers = cleaned.match(/[0-9]+/g)?.join("") || "";
+    if (!letters || !numbers) return cleaned; // 형식 불완전하면 그냥 대문자만
+    return `${letters}-${numbers}`;
+  }
+
   async function handleSubmit() {
-    const seat = document.getElementById("seatInput").value.trim();
+    const seat = normalizeSeat(document.getElementById("seatInput").value);
     if (!seat || !selectedMovie) return;
 
     const payload = JSON.stringify({
       movie: selectedMovie,
       seat: seat,
-      color: currentColor
+      color: currentColor.toUpperCase()
     });
 
     fetch(APPS_SCRIPT_URL, {
@@ -336,7 +358,7 @@
     }).catch(err => console.error("저장 실패:", err));
 
     // 즉시 완료 화면
-    render("done", { movie: selectedMovie, seat, color: currentColor });
+    render("done", { movie: selectedMovie, seat, color: currentColor.toUpperCase() });
   }
 
   function resetSurvey() {
