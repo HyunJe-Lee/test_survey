@@ -320,29 +320,30 @@
 
   async function handleSubmit() {
     const seat = document.getElementById("seatInput").value.trim();
-    if (!seat) return;
+    if (!seat || !selectedMovie) return;
 
-    const btn = document.getElementById("submitBtn");
-    const errEl = document.getElementById("errorMsg");
-    btn.disabled = true;
-    btn.textContent = "저장 중…";
-    errEl.style.display = "none";
+    const payload = JSON.stringify({
+      movie: selectedMovie,
+      seat: seat,
+      color: currentColor
+    });
 
-    try {
-      await fetch(APPS_SCRIPT_URL, {
+    const sent = navigator.sendBeacon(
+      APPS_SCRIPT_URL,
+      new Blob([payload], { type: "application/json" })
+    );
+
+    if (!sent) {
+      fetch(APPS_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", // Apps Script는 CORS 헤더 없음 → no-cors 필요
+        mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movie: selectedMovie, seat, color: currentColor })
-      });
-      // no-cors라 응답 확인 불가 → 성공으로 간주
-      render("done", { movie: selectedMovie, seat, color: currentColor });
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = "제출하기 →";
-      errEl.style.display = "block";
-      errEl.textContent = "저장 중 오류가 발생했어요. 다시 시도해주세요.";
+        body: payload
+      }).catch(console.error);
     }
+
+    // 즉시 완료 화면
+    render("done", { movie: selectedMovie, seat, color: currentColor });
   }
 
   function resetSurvey() {
