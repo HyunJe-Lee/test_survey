@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>설문조사</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.03); }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 28px;
+      padding: 36px 28px 32px;
+      width: 100%; max-width: 420px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      animation: fadeUp 0.5s ease both;
+    }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 36px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B6B, #A29BFE);
+      margin: 0 auto 14px;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px; font-weight: 700;
+      color: #1a1a2e; letter-spacing: -0.5px;
+    }
+    .subtitle { font-size: 14px; color: #999; margin-top: 5px; }
+
+    /* Section */
+    .section { margin-bottom: 28px; }
+    label {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 600; color: #333;
+      margin-bottom: 12px;
+    }
+    .q-num {
+      background: #1a1a2e; color: white;
+      border-radius: 6px; padding: 2px 7px;
+      font-size: 11px; font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    /* Text input */
+    input[type="text"] {
+      width: 100%; padding: 14px 16px;
+      border-radius: 14px; border: 2px solid #eee;
+      font-size: 16px; outline: none;
+      background: #fafafa;
+      font-family: 'Gowun Dodum', sans-serif;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: #A29BFE; }
+
+    /* Color picker */
+    .color-wrap { position: relative; margin-bottom: 14px; cursor: pointer; }
+    input[type="color"] {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; z-index: 2;
+    }
+    .color-preview {
+      display: flex; align-items: center; gap: 14px;
+      background: #fafafa; border-radius: 14px;
+      border: 2px solid #eee; padding: 12px 16px;
+      pointer-events: none;
+    }
+    .color-swatch {
+      width: 48px; height: 48px; border-radius: 12px;
+      border: 3px solid rgba(255,255,255,0.7);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transition: background 0.2s;
+    }
+    .color-hex {
+      font-size: 18px; font-weight: 700;
+      font-family: 'Space Grotesk', monospace;
+      color: #1a1a2e;
+    }
+    .color-hint { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+    /* Quick swatches */
+    .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+    .swatch {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: none; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      flex-shrink: 0;
+    }
+
+    /* Movie options */
+    .movie-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .movie-btn {
+      padding: 14px 10px;
+      border-radius: 14px; border: 2px solid #eee;
+      background: #fafafa; font-size: 14px; font-weight: 600;
+      color: #555; cursor: pointer;
+      font-family: 'Gowun Dodum', sans-serif;
+      transition: all 0.18s;
+      text-align: center;
+    }
+    .movie-btn.selected {
+      border-color: #A29BFE;
+      background: #f0eeff;
+      color: #5f4fcf;
+      box-shadow: 0 0 0 3px rgba(162,155,254,0.2);
+    }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%; padding: 16px;
+      border-radius: 14px; border: none;
+      color: white; font-size: 16px; font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.3px; cursor: pointer;
+      transition: opacity 0.2s, background 0.3s;
+    }
+    .submit-btn:disabled {
+      background: #e0e0e0 !important;
+      animation: none !important;
+      cursor: not-allowed;
+    }
+
+    /* Done */
+    .done-card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 28px; padding: 44px 28px;
+      text-align: center; max-width: 380px; width: 100%;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+      animation: fadeUp 0.4s ease;
+    }
+    .done-icon { font-size: 48px; margin-bottom: 16px; }
+    .done-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px; font-weight: 700; color: #1a1a2e;
+    }
+    .done-sub { font-size: 14px; color: #888; margin: 8px 0 28px; }
+    .summary {
+      background: #f8f8f8; border-radius: 14px;
+      padding: 16px 20px; margin-bottom: 24px;
+      display: flex; flex-direction: column; gap: 12px; text-align: left;
+    }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; }
+    .summary-label { font-size: 13px; color: #999; }
+    .summary-val { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .retry-btn {
+      background: transparent; border: 2px solid #ddd;
+      border-radius: 12px; padding: 12px 24px;
+      font-size: 14px; cursor: pointer; color: #555;
+      font-family: 'Gowun Dodum', sans-serif;
+    }
+    .error-msg { color: #e57373; font-size: 13px; margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<script>
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxY13Xtj5RpXRutB7kNp4qcSLwlm7obV5vy3s7R8dDcHpQ5q7BHmot2cjYFVrSdKaZI/exec";
+</script>
+
+<div id="app"></div>
+
+<script>
+  const QUICK_COLORS = ["#FF6B6B","#FF9F43","#FFEAA7","#55EFC4","#74B9FF","#A29BFE","#FD79A8","#2D3436"];
+  const MOVIES = ["A영화", "B영화", "C영화", "D영화"];
+  let currentColor = "#FF6B6B";
+  let selectedMovie = "";
+
+  function render(view, data = {}) {
+    const app = document.getElementById("app");
+
+    if (view === "survey") {
+      app.innerHTML = `
+        <div class="card">
+          <div class="header">
+            <div class="dot"></div>
+            <h1>설문조사</h1>
+            <p class="subtitle">잠깐, 세 가지만 알려주세요!</p>
+          </div>
+
+          <div class="section">
+            <label><span class="q-num">01</span> 어떤 영화를 보았나요?</label>
+            <div class="movie-options" id="movieOptions">
+              ${MOVIES.map(m => `<button class="movie-btn${selectedMovie === m ? ' selected' : ''}" data-movie="${m}">${m}</button>`).join('')}
+            </div>
+          </div>
+
+          <div class="section">
+            <label><span class="q-num">02</span> 좌석번호를 입력해주세요</label>
+            <input type="text" id="seatInput" placeholder="예: A-12" value="" />
+          </div>
+
+          <div class="section">
+            <label><span class="q-num">03</span> 좋아하는 색상을 골라주세요</label>
+            <div class="color-wrap" id="colorWrap">
+              <input type="color" id="colorPicker" value="${currentColor}" />
+              <div class="color-preview">
+                <div class="color-swatch" id="colorSwatch" style="background:${currentColor}"></div>
+                <div>
+                  <div class="color-hex" id="colorHex">${currentColor.toUpperCase()}</div>
+                  <div class="color-hint">탭해서 색상 선택</div>
+                </div>
+              </div>
+            </div>
+            <div class="swatches" id="swatches"></div>
+          </div>
+
+          <button class="submit-btn" id="submitBtn" disabled
+            style="background: linear-gradient(135deg, ${currentColor}, ${currentColor}cc)">
+            제출하기 →
+          </button>
+          <div class="error-msg" id="errorMsg" style="display:none"></div>
+        </div>`;
+
+      // Swatches
+      const swatchesEl = document.getElementById("swatches");
+      QUICK_COLORS.forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = "swatch";
+        btn.style.background = c;
+        btn.style.boxShadow = c === currentColor
+          ? `0 0 0 3px white, 0 0 0 5px ${c}` : "0 2px 6px rgba(0,0,0,0.15)";
+        btn.style.transform = c === currentColor ? "scale(1.25)" : "scale(1)";
+        btn.onclick = () => updateColor(c);
+        swatchesEl.appendChild(btn);
+      });
+
+      // Movie selection
+      document.getElementById("movieOptions").addEventListener("click", e => {
+        const btn = e.target.closest(".movie-btn");
+        if (!btn) return;
+        selectedMovie = btn.dataset.movie;
+        document.querySelectorAll(".movie-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        checkCanSubmit();
+      });
+
+      // Color picker
+      document.getElementById("colorPicker").addEventListener("input", e => updateColor(e.target.value));
+
+      // Text input → enable button
+      document.getElementById("seatInput").addEventListener("input", checkCanSubmit);
+
+      function checkCanSubmit() {
+        const seat = document.getElementById("seatInput").value.trim();
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = !(seat && selectedMovie);
+        if (!btn.disabled) btn.style.animation = "pulse 2s ease infinite";
+        else btn.style.animation = "none";
+      }
+
+      // Submit
+      document.getElementById("submitBtn").addEventListener("click", handleSubmit);
+    }
+
+    if (view === "done") {
+      app.innerHTML = `
+        <div class="done-card">
+          <div class="done-icon">✅</div>
+          <h2 class="done-title">응답 완료!</h2>
+          <p class="done-sub">소중한 의견 감사합니다 🙏</p>
+          <div class="summary">
+            <div class="summary-row">
+              <span class="summary-label">관람 영화</span>
+              <strong class="summary-val">${data.movie}</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">좌석번호</span>
+              <strong class="summary-val">${data.seat}</strong>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">선택 색상</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div style="width:22px;height:22px;border-radius:5px;background:${data.color};border:2px solid rgba(0,0,0,0.08)"></div>
+                <strong class="summary-val" style="font-family:monospace">${data.color}</strong>
+              </div>
+            </div>
+          </div>
+          <button class="retry-btn" onclick="resetSurvey()">다시 참여하기</button>
+        </div>`;
+    }
+  }
+
+  function updateColor(c) {
+    currentColor = c;
+    const swatch = document.getElementById("colorSwatch");
+    const hex = document.getElementById("colorHex");
+    const picker = document.getElementById("colorPicker");
+    const btn = document.getElementById("submitBtn");
+    if (swatch) swatch.style.background = c;
+    if (hex) hex.textContent = c.toUpperCase();
+    if (picker) picker.value = c;
+    if (btn) btn.style.background = `linear-gradient(135deg, ${c}, ${c}cc)`;
+
+    // Re-render swatches highlight
+    document.querySelectorAll(".swatch").forEach((el, i) => {
+      const sc = QUICK_COLORS[i];
+      el.style.boxShadow = sc === c ? `0 0 0 3px white, 0 0 0 5px ${sc}` : "0 2px 6px rgba(0,0,0,0.15)";
+      el.style.transform = sc === c ? "scale(1.25)" : "scale(1)";
+    });
+  }
+
+  async function handleSubmit() {
+    const seat = document.getElementById("seatInput").value.trim();
+    if (!seat) return;
+
+    const btn = document.getElementById("submitBtn");
+    const errEl = document.getElementById("errorMsg");
+    btn.disabled = true;
+    btn.textContent = "저장 중…";
+    errEl.style.display = "none";
+
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Apps Script는 CORS 헤더 없음 → no-cors 필요
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movie: selectedMovie, seat, color: currentColor })
+      });
+      // no-cors라 응답 확인 불가 → 성공으로 간주
+      render("done", { movie: selectedMovie, seat, color: currentColor });
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "제출하기 →";
+      errEl.style.display = "block";
+      errEl.textContent = "저장 중 오류가 발생했어요. 다시 시도해주세요.";
+    }
+  }
+
+  function resetSurvey() {
+    currentColor = "#FF6B6B";
+    selectedMovie = "";
+    render("survey");
+  }
+
+  // 초기 렌더
+  render("survey");
+</script>
+</body>
+</html>
