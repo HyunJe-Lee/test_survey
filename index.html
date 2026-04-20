@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>설문조사</title>
+  <title>노마드 필름 페스티벌 설문</title>
   <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,7 +44,12 @@
       font-size: 26px; font-weight: 700;
       color: #1a1a2e; letter-spacing: -0.5px;
     }
-    .subtitle { font-size: 14px; color: #999; margin-top: 5px; }
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 600;
+      color: #5f4fcf; margin-top: 4px;
+    }
+    .subtitle { font-size: 14px; color: #2d3561; margin-top: 8px; font-weight: 600; }
 
     /* Section */
     .section { margin-bottom: 28px; }
@@ -58,6 +63,7 @@
       border-radius: 6px; padding: 2px 7px;
       font-size: 11px; font-family: 'Space Grotesk', sans-serif;
       letter-spacing: 0.5px;
+      flex-shrink: 0;
     }
 
     /* Text input */
@@ -72,7 +78,7 @@
     input[type="text"]:focus { border-color: #A29BFE; }
 
     /* Color picker */
-    .color-wrap { position: relative; margin-bottom: 14px; cursor: pointer; }
+    .color-wrap { position: relative; cursor: pointer; }
     input[type="color"] {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
@@ -97,25 +103,17 @@
     }
     .color-hint { font-size: 12px; color: #aaa; margin-top: 2px; }
 
-    /* Quick swatches */
-    .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
-    .swatch {
-      width: 32px; height: 32px; border-radius: 8px;
-      border: none; cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      flex-shrink: 0;
-    }
-
     /* Movie options */
     .movie-options { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .movie-btn {
-      padding: 14px 10px;
+      padding: 14px;
       border-radius: 14px; border: 2px solid #eee;
-      background: #fafafa; font-size: 14px; font-weight: 600;
+      background: #fafafa; font-size: 12px; font-weight: 600;
       color: #555; cursor: pointer;
       font-family: 'Gowun Dodum', sans-serif;
       transition: all 0.18s;
-      text-align: center;
+      text-align: left;
+      line-height: 1.4;
     }
     .movie-btn.selected {
       border-color: #A29BFE;
@@ -158,9 +156,9 @@
       padding: 16px 20px; margin-bottom: 24px;
       display: flex; flex-direction: column; gap: 12px; text-align: left;
     }
-    .summary-row { display: flex; justify-content: space-between; align-items: center; }
-    .summary-label { font-size: 13px; color: #999; }
-    .summary-val { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .summary-label { font-size: 13px; color: #999; flex-shrink: 0; }
+    .summary-val { font-size: 14px; font-weight: 600; color: #1a1a2e; text-align: right; }
     .retry-btn {
       background: transparent; border: 2px solid #ddd;
       border-radius: 12px; padding: 12px 24px;
@@ -179,15 +177,26 @@
 <div id="app"></div>
 
 <script>
-  const QUICK_COLORS = ["#FF6B6B","#FF9F43","#FFEAA7","#55EFC4","#74B9FF","#A29BFE","#FD79A8","#2D3436"];
-  const MOVIES = [
-    "Interstellar",
-    "The Matrix 1",
-    "Inception",
-    "The Lord of the Rings: The Fellowship of the Ring",
-    "Harry Potter and the Philosopher's Stone"
+  const MOVIES_DAY1 = [
+    "12:00 워킹 위드 더 윈드",
+    "14:00 단편선1<br /> (아이스빌더, 하프웨이, 고스트오브더마운틴, 둡파)",
+    "16:00 갸모: 퀸 오브 더 마운틴스",
+    "17:30 피아노 투 잔스카르",
+    "19:30 단편선2<br />(가르자이사쿠츠, 타르, 아이엠잔스카르, 라스트데이즈오브서머)"
   ];
-  let currentColor = "#FF6B6B";
+  const MOVIES_DAY2 = [
+    "12:00 메이드 인 파라다이스",
+    "13:30 송즈 오브 더 워터 스피릿츠",
+    "16:00 단편선3 (세쿨, 다르마, 필그리미지, 틱스파)",
+    "18:00 셰퍼디스 오브 더 글레이셔"
+  ];
+
+  // URL에서 day 파라미터 읽기 (없으면 기본 1일차)
+  const urlParams = new URLSearchParams(window.location.search);
+  const day = urlParams.get("day") === "2" ? 2 : 1;
+  const MOVIES = day === 2 ? MOVIES_DAY2 : MOVIES_DAY1;
+  const DEFAULT_COLOR = "#FFFFFF";
+  let currentColor = DEFAULT_COLOR;
   let selectedMovie = "";
 
   function render(view, data = {}) {
@@ -198,12 +207,13 @@
         <div class="card">
           <div class="header">
             <div class="dot"></div>
-            <h1>설문조사</h1>
-            <p class="subtitle">잠깐! 세 가지만 알려주세요!</p>
+            <h1>노마드 필름 페스티벌</h1>
+            <h2>1st Camp in Ladakh · Day ${day}</h2>
+            <p class="subtitle">함께 영화제의 순간을 색으로 기록합니다</p>
           </div>
 
           <div class="section">
-            <label><span class="q-num">01</span> 어떤 영화를 보았나요?</label>
+            <label><span class="q-num">01</span> 상영 회차를 선택해주세요</label>
             <div class="movie-options" id="movieOptions">
               ${MOVIES.map(m => `<button class="movie-btn${selectedMovie === m ? ' selected' : ''}" data-movie="${m}">${m}</button>`).join('')}
             </div>
@@ -211,11 +221,11 @@
 
           <div class="section">
             <label><span class="q-num">02</span> 좌석번호를 입력해주세요</label>
-            <input type="text" id="seatInput" placeholder="예: A-12" value="" />
+            <input type="text" id="seatInput" placeholder="예: A8" value="" />
           </div>
 
           <div class="section">
-            <label><span class="q-num">03</span> 좋아하는 색상을 골라주세요</label>
+            <label><span class="q-num">03</span> 지금 당신의 에너지는 어떤 색인가요?<br />(편하게 떠오르는 색 하나 골라주세요)</label>
             <div class="color-wrap" id="colorWrap">
               <input type="color" id="colorPicker" value="${currentColor}" />
               <div class="color-preview">
@@ -226,7 +236,6 @@
                 </div>
               </div>
             </div>
-            <div class="swatches" id="swatches"></div>
           </div>
 
           <button class="submit-btn" id="submitBtn" disabled
@@ -235,19 +244,6 @@
           </button>
           <div class="error-msg" id="errorMsg" style="display:none"></div>
         </div>`;
-
-      // Swatches
-      const swatchesEl = document.getElementById("swatches");
-      QUICK_COLORS.forEach(c => {
-        const btn = document.createElement("button");
-        btn.className = "swatch";
-        btn.style.background = c;
-        btn.style.boxShadow = c === currentColor
-          ? `0 0 0 3px white, 0 0 0 5px ${c}` : "0 2px 6px rgba(0,0,0,0.15)";
-        btn.style.transform = c === currentColor ? "scale(1.25)" : "scale(1)";
-        btn.onclick = () => updateColor(c);
-        swatchesEl.appendChild(btn);
-      });
 
       // Movie selection
       document.getElementById("movieOptions").addEventListener("click", e => {
@@ -260,13 +256,17 @@
       });
 
       // Color picker
-      document.getElementById("colorPicker").addEventListener("input", e => updateColor(e.target.value));
+      document.getElementById("colorPicker").addEventListener("input", e => {
+        currentColor = e.target.value;
+        document.getElementById("colorSwatch").style.background = currentColor;
+        document.getElementById("colorHex").textContent = currentColor.toUpperCase();
+        document.getElementById("submitBtn").style.background =
+          `linear-gradient(135deg, ${currentColor}, ${currentColor}cc)`;
+      });
 
-      // Text input → enable button
+      // Text input
       document.getElementById("seatInput").addEventListener("input", checkCanSubmit);
-
       document.getElementById("seatInput").addEventListener("blur", e => {
-        // 포커스 잃을 때 자동 정리
         if (e.target.value.trim()) {
           e.target.value = normalizeSeat(e.target.value);
         }
@@ -281,7 +281,6 @@
         else btn.style.animation = "none";
       }
 
-      // Submit
       document.getElementById("submitBtn").addEventListener("click", handleSubmit);
     }
 
@@ -313,41 +312,19 @@
     }
   }
 
-  function updateColor(c) {
-    currentColor = c;
-    const swatch = document.getElementById("colorSwatch");
-    const hex = document.getElementById("colorHex");
-    const picker = document.getElementById("colorPicker");
-    const btn = document.getElementById("submitBtn");
-    if (swatch) swatch.style.background = c;
-    if (hex) hex.textContent = c.toUpperCase();
-    if (picker) picker.value = c;
-    if (btn) btn.style.background = `linear-gradient(135deg, ${c}, ${c}cc)`;
-
-    // Re-render swatches highlight
-    document.querySelectorAll(".swatch").forEach((el, i) => {
-      const sc = QUICK_COLORS[i];
-      el.style.boxShadow = sc === c ? `0 0 0 3px white, 0 0 0 5px ${sc}` : "0 2px 6px rgba(0,0,0,0.15)";
-      el.style.transform = sc === c ? "scale(1.25)" : "scale(1)";
-    });
-  }
-
   function normalizeSeat(raw) {
-    const cleaned = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    const letters = cleaned.match(/[A-Z]+/g)?.join("") || "";
-    const numbers = cleaned.match(/[0-9]+/g)?.join("") || "";
-    if (!letters || !numbers) return cleaned; // 형식 불완전하면 그냥 대문자만
-    return `${letters}-${numbers}`;
+    return raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
   }
 
-  async function handleSubmit() {
+  function handleSubmit() {
     const seat = normalizeSeat(document.getElementById("seatInput").value);
     if (!seat || !selectedMovie) return;
 
+    const colorUpper = currentColor.toUpperCase();
     const payload = JSON.stringify({
       movie: selectedMovie,
       seat: seat,
-      color: currentColor.toUpperCase()
+      color: colorUpper
     });
 
     fetch(APPS_SCRIPT_URL, {
@@ -357,17 +334,15 @@
       body: payload
     }).catch(err => console.error("저장 실패:", err));
 
-    // 즉시 완료 화면
-    render("done", { movie: selectedMovie, seat, color: currentColor.toUpperCase() });
+    render("done", { movie: selectedMovie, seat, color: colorUpper });
   }
 
   function resetSurvey() {
-    currentColor = "#FF6B6B";
+    currentColor = DEFAULT_COLOR;
     selectedMovie = "";
     render("survey");
   }
 
-  // 초기 렌더
   render("survey");
 </script>
 </body>
